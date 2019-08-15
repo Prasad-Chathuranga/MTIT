@@ -1,0 +1,120 @@
+------- Exercise 01: Preparing the analysis Service database --------------
+
+Task 01: Create an Analysis Service Project
+
+1.	Open Business Intelligence Development Studio.
+2.	On the File menu, point to New, and then select Project.
+3.	Verify that Business Intelligence Projects is selected in the Project types pane.
+4.	Verify that Analysis Services Project is selected in the Templates pane.
+5.	In the Name box, name the new project Practical02.
+6.	Click OK.
+
+Task 02: To change the instance where data mining objects are stored
+
+1.	In Business Intelligence Development Studio, on the Project menu, select Properties.
+2.	On the left side of the Property Pages pane, under Configuration Properties, click Deployment.
+3.	On the right side of the Property Pages pane, under Target, verify that the Server name is localhost. If you are using a different instance, type the name of the instance. Click OK.
+Task 03: Creating a Data Source
+A data source is a data connection that is saved and managed in your project and deployed to your Microsoft SQL Server Analysis Service database.
+1.	In Solution Explorer, right-click the Data Sources folder and select New Data Source.
+2.	On the Welcome to the Data Source Wizard page, click Next.
+3.	On the Select how to define the connection page, click New to add a connection to the AdventureWorksDW2008R2 database.
+4.	In the Provider list in Connection Manager, select Native OLE DB\SQL Server Native Client 10.0.
+5.	In the Server name box, type localhost as the server name
+For example, type localhost if the database is hosted on the local server.
+6.	In the Log onto the server group, select Use Windows Authentication.
+7.	In the Select or enter a database name list, select Adventure Works DW2008R2, and then Click OK.
+8.	Click Next.
+9.	On the Impersonation Information page, click Use the service account, and then click Next.
+On the Completing the Wizard page, notice that, by default, the data source is named Adventure Works DW2008R2.
+10.	Click Finish
+
+Task 04: creating Data Source View
+
+A data source view is built on a data source and defines a subset of the data that populates a data warehouse. You can use the data source view to modify the structure of the data to make it more relevant to your project. By using data source views, you can select the tables that relate to your particular project, establish relationships between tables, and add calculated columns and named views without modifying the original data source
+1.	In Solution Explorer, right-click Data Source Views, and select New Data Source View.
+2.	On the Welcome to the Data Source View Wizard page, click Next.
+3.	On the Select a Data Source page, under Relational data sources, select the Adventure Works DW2008R2 data source that you created in the last task. Click Next.
+4.	On the Select Tables and Views page, select the following objects, and then click the right arrow to include them in the new data source view:
+1.	vTargetMail (dbo) - view of historical data about past bike buyers
+5.	Click Next.
+6.	On the Completing the Wizard page, by default the data source view is named Adventure Works DW2008R2. Change the name to Targeted Mailing, and then clickFinish.
+
+------------------------------------------------------------------------------------------------------
+
+------------------------------ Exercise 02: Building a Targeted Mailing Structure --------------------------------
+
+The first step in creating a targeted mailing scenario is to use the Data Mining Wizard in Business Intelligence Development Studio to create a new mining structure and decision tree mining model. 
+
+Task 01: Select tables for the mining structure
+
+1.	In Solution Explorer, right-click Mining Structures and select New Mining Structure to start the Data Mining Wizard.
+2.	On the Welcome to the Data Mining Wizard page, click Next.
+3.	On the Select the Definition Method page, verify that From existing relational database or data warehouse is selected, and then click Next.
+4.	On the Create the Data Mining Structure page, under Which data mining technique do you want to use? select Microsoft Decision Trees.
+5.	Click Next.
+6.	On the Select Data Source View page, in the Available data source views pane, select Targeted Mailing. You can click Browse to view the tables in the data source view and then click Close to return to the wizard.
+7.	Click Next.
+8.	On the Specify Table Types page, select the check box in the Case column for vTargetMail to use it as the case table, and then click Next. You will use the ProspectiveBuyer table later for testing; ignore it for now.
+9.	On the Specify the Training Data page, you will identify at least one predictable column, one key column, and one input column for your model. Select the check box in the Predictable column in the BikeBuyer row.
+10.	Click Suggest to open the Suggest Related Columns dialog box.
+11.	The Suggest button is enabled whenever at least one predictable attribute has been selected. The Suggest Related Columns dialog box lists the columns that are most closely related to the predictable column, and orders the attributes by their correlation with the predictable attribute. Columns with a significant correlation (confidence greater than 95%) are automatically selected to be included in the model.
+12.	Verify that the check box in the Key column is selected in the CustomerKey row.
+13.	Select the check boxes in the Input column in the following rows. You can check multiple columns by highlighting a range of cells and pressing CTRL while selecting a check box.
+•	Age
+•	CommuteDistance
+•	EnglishEducation
+•	EnglishOccupation
+•	Gender
+•	MaritalStatus
+•	NumberCarsOwned
+•	NumberChildrenAtHome
+•	Region
+•	TotalChildren
+•	YearlyIncome
+
+14.	On the far-left column of the page, select the check boxes in the following rows.
+•	AddressLine1
+•	EmailAddress
+•	FirstName
+•	LastName.
+15.	Click Next
+
+Task 02: specifying the data types and content types
+
+1.	On the Specify Columns' Content and Data Type page, click Detect to run an algorithm that determines the default data and content types for each column.
+2.	Click Next.
+Task 03: Specifying a Testing Data Set and completing the wizard
+1.	On the Create Testing Set page, for Percentage of data for testing, leave the default value of 30.
+2.	For Maximum number of cases in testing data set, type 1000.
+3.	Click Next.
+4.	On the Completing the Wizard page, in Mining structure name, type Targeted Mailing
+5.	In Mining model name, type TM_Decision_Tree
+6.	Select the Allow drill through check box.
+7.	Review the Preview pane. Notice that only those columns selected as Key, Input or Predictable are shown. The other columns you selected (e.g., AddressLine1) are not used for building the model but will be available in the underlying structure, and can be queried after the model is processed and deployed.
+8.	Click Finish.
+
+----------------------------------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------------------------------
+
+Task 01: Set “HoldOutSeed” value
+
+When a project is deployed and process the structure and models, individual rows in your data structure are randomly assigned to the training and testing set based on a random number seed. Typically, the random number seed is computed based on attributes of the data structure. The holdout seed is used to initialize random sampling and ensures that the data is partitioned in roughly the same way for all mining structures and their models.
+
+1.	Click on the Mining Structures tab or the Mining Models tab in Data Mining Designer in Business Intelligence Development Studio.
+Targeted Mailing MiningStructure displays in the Properties pane.
+2.	Ensure that the Properties pane is open by pressing F4.
+3.	Ensure that CacheMode is set to KeepTrainingCases.
+4.	Enter 12 for HoldoutSeed.
+
+Task 02: Deploy and process the Model
+
+1.	In the Mining Model menu, select Process Mining Structure and All Models.
+If you made changes to the structure, you will be prompted to build and deploy the project before processing the models. Click Yes.
+2.	Click Run in the Processing Mining Structure - Targeted Mailing dialog box.
+The Process Progress dialog box opens to display the details of model processing. Model processing might take some time, depending on your computer.
+3.	Click Close in the Process Progress dialog box after the models have completed processing.
+4.	Click Close in the Processing Mining Structure dialog box.
+
+----------------------------------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------------------------------
