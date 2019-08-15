@@ -1,0 +1,194 @@
+------------ Exercise 01: Create Analysis service project and data source -----------------------
+
+Task 01: Create an Analysis Service Project
+1.	Open Business Intelligence Development Studio.
+2.	On the File menu, point to New, and then select Project.
+3.	Verify that Business Intelligence Projects is selected in the Project types pane.
+4.	Verify that Analysis Services Project is selected in the Templates pane.
+5.	In the Name box, name the new project SalesForecasting.
+6.	Click OK.
+
+Task 03: Creating a Data Source
+
+A data source is a data connection that is saved and managed in your project and deployed to your Microsoft SQL Server Analysis Service database.
+1.	In Solution Explorer, right-click the Data Sources folder and select New Data Source.
+2.	On the Welcome to the Data Source Wizard page, click Next.
+3.	On the Select how to define the connection page, click New to add a connection to the AdventureWorksDW2008R2 database.
+4.	In the Provider list in Connection Manager, select Native OLE DB\SQL Server Native Client 10.0.
+5.	In the Server name box, type localhost as the server name
+For example, type localhost if the database is hosted on the local server.
+6.	In the Log onto the server group, select Use Windows Authentication.
+7.	In the Select or enter a database name list, select Adventure Works DW2008R2, and then Click OK.
+8.	Click Next.
+9.	On the Impersonation Information page, click Use the service account, and then click Next.
+On the Completing the Wizard page, notice that, by default, the data source is named Adventure Works DW2008R2.
+10.	Click Finish
+
+------------------ Exercise 02: Adding a Data Source View for Forecasting ------------------
+
+In this task, you add a new data source view that will be used for the forecasting scenario. A forecasting model requires that the data contains a column that can be used to identify steps in a time series. If you plan to analyze multiple series of data, all series must end on the same date or time step.
+
+To add a data source view
+
+1.	In Solution Explorer, right-click Data Source Views, and select New Data Source View.
+2.	On the Welcome to the Data Source View Wizard page, click Next. 
+3.	On the Select a Data Source page, under Relational data sources, select the Adventure Works DW2008 data source. Click Next.
+4.	On the Select Tables and Views page, select the table, vTimeSeries (dbo), and then click the right arrow to add it to the data source view.
+5.	Click Next.
+6.	On the Completing the Wizard page, by default the data source view is named Adventure Works DW2008. Change this to SalesByRegion, and then click Finish.
+Data Source View Designer opens to display the SalesByRegion data source view.
+
+After you have created the data source view, you can explore the data in the following ways:
+
+•	Sampling data randomly, or taking the top n rows.
+•	Assigning friendly names to the tables or columns in the data source view.
+•	Viewing charts that show the distribution of the data.
+•	Creating aggregations on the fly with pivot charts and pivot tables.
+
+To set the key in the data source view
+1.	In the pane SalesByRegion.dsv, select the vTimeSeries table.
+2.	Right-click the column, Reporting Date, and select Set Logical Primary Key.
+
+------------- Exercise 03: Creating a Forecasting Structure and Model -------------------------
+
+To create a forecasting mining structure
+
+1.	In Solution Explorer in Business Intelligence Development Studio, right-click Mining Structures and select New Mining Structure.
+2.	On the Welcome to the Data Mining Wizard page, click Next.
+3.	On the Select the Definition Method page, verify that From existing relational database or data warehouse is selected, and then click Next.
+4.	On the Create the Data Mining Structure page, under Which data mining technique do you want to use?, select Microsoft Time Series, and then click Next.
+5.	On the Select Data Source View page, under Available data source views, select SalesByRegion.
+6.	Click Next.
+7.	On the Specify Table Types page, ensure that the check box in the Case column for the vTimeSeries table is selected, and then click Next.
+8.	On the Specify the Training Data page, select the check boxes in the Key column for the ModelRegion and ReportingDate columns.
+ReportingDate should be selected by default, because you specified this column as the logical primary key when you created the data source view. By adding ModelRegion as a second key, you are telling the algorithm to create a separate time series for each combination of model and region listed in this field.
+9.	Select the check boxes in the Input and Predictable columns for the Quantity and Amount column, and then click Next.
+By selecting Predictable, you indicate that you want to create forecasts on the data in this column. However, because you want to base the forecasts on past data, you must also add the column as an input.
+10.	On the page Specify Columns' Content and Data Type, review the selections.
+The ModelRegion column is designated as a Key column and the ReportingDate column is automatically designated as a Key Time column. You can have only one of each type of key.
+11.	Click Next.
+12.	On the Completing the Wizard page, for Mining structure name, type Forecasting. ( Note: The option to enable drillthrough is not available for time series models.)
+13.	In Mining model name, type Forecasting, and then click Finish.
+Data Mining Designer opens to display the Forecasting mining structure that you just created.
+
+
+Modifying the Columns in the Mining Model
+Because you added a new column to the structure, you must define how the model will use the column. You can specify how the column will be used on the Mining Modelstab of Data Mining Designer.
+
+The Mining Models tab lists the columns that the mining structure contains in the Structure column of the grid, and lists the columns that the mining model contains in the column that has the name of the model, 
+
+In the Mining Models tab, you can also create new models based on the same structure, and you can adjust the algorithm and column properties for each model. However, you must process the model before these changes take effect.
+
+You can also change the properties of individual columns by selecting the column and opening the Properties window. To open the Properties window, right-click the column name, and then select Properties. If you change a property within the column for an individual model, you can change the properties only for that model. However, when you change a property within the Structure column, the change affects every model that is associated with the structure. Whenever you make changes to the model or structure, you must reprocess to see the effects.
+
+
+------------------ Customizing and Processing the Forecasting Model --------------------------------------
+
+The Microsoft Time Series algorithm provides parameters that affect how a model is created, and how the time data is analyzed. You can change these properties to control how the mining model makes predictions.
+For this task in the tutorial, you will make the following change in the parameters:
+
+•	You will adjust the value of the PERIODICITY_HINT parameter for the Forecasting model. This parameter gives the algorithm information about how frequently the pattern in the data is repeated. The data in AdventureWorks DW2008 is patterned on a monthly basis, and the periodicity is at the yearly level. Therefore, you will set thePERIODICITY_HINT parameter to 12, to indicate that a pattern repeats itself after every 12 values.
+You will also review the settings of two important parameters that were introduced in SQL Server 2008 as part of enhancements to the Microsoft Time Series algorithm.
+•	The FORECAST_METHOD parameter controls whether the time series algorithm is optimized for short-term or long-term predictions. By default, the FORECAST_METHOD parameter is set to MIXED, which means that two different prediction algorithms are blended and balanced to perform both short-term and long-term prediction.
+•	The PREDICTION_SMOOTHING parameter controls the mixture of long-term and short-predictions. By default, this parameter is set to 0.5, which generally provides the best balance for overall accuracy.
+
+After the changes have been made, you will process the model.
+
+To change the algorithm parameters
+1.	On the Mining Models tab, right-click Forecasting, and select Set Algorithm Parameters.
+2.	In the PERIODICITY_HINT row of the Algorithm Parameters dialog box, click the Value column, then type {12}, including the braces.
+3.	In the FORECAST_METHOD row, verify that the Value text box is either blank or set to MIXED. If a different value has been entered, type MIXED to change the parameter back to the default value.
+4.	In the PREDICTION_SMOOTHING row, verify that the Value text box is either blank or set to 0.5. If a different value has been entered, click Value and type 0.5 to change the parameter back to the default value.
+(Note: The PREDICTION_SMOOTHING parameter is available only in SQL Server Enterprise. Therefore, you cannot view or change the value of the PREDICTION_SMOOTHING parameter in SQL Server Standard. However, the default behavior is the same.)
+5.	Click OK.
+
+To process the forecasting model
+
+1.	On the Mining Model menu of BI Development Studio, select Process Mining Structure and All Models.
+2.	At the warning asking whether you want to build and deploy the project, click Yes.
+3.	In the Process Mining Structure - Forecasting dialog box, click Run. The Process Progress dialog box opens to display information about model processing. Model processing may take some time.
+4.	After processing is complete, click Close to exit the Process Progress dialog box.
+5.	Click Close again to exit the Process Mining Structure - Forecasting dialog box.
+
+Handling Missing Data
+
+In many cases, your sales data might have gaps that are filled with nulls, or a store might have failed to meet the reporting deadline, leaving an empty cell at the end of the series. In these scenarios, Analysis Services raises the following error and will not process the model.
+"Error (Data mining): Time stamps not synchronized starting with series <series name>, of the mining model, <model name>. All time series must end at the same time mark and cannot have arbitrarily missing data points. Setting the MISSING_VALUE_SUBSTITUTION parameter to Previous or to a numeric constant will automatically patch missing data points where possible."
+To avoid this error, you can specify that Analysis Services automatically provide new values to fill in the gaps by using the following methods:
+•	Using an average value. The mean is calculated by using all valid values in the same data series.
+•	Using the previous value. You can substitute previous values for multiple missing cells, but you cannot fill starting values.
+•	Using a constant value that you supply.
+
+To specify that gaps be filled by averaging values
+
+1.	On the Mining Models tab, right-click the Forecasting column, and select Set Algorithm Parameters.
+2.	In the Algorithm Parameters dialog box, in the  MISSING_VALUE_SUBSTITUTION  row, click the Value column, and type Mean.
+
+-------------------------------------------------------------------------------
+
+To view details for a particular data series in the generic content viewer
+
+1.	In the Mining Model Viewer tab, select Microsoft Generic Content Tree Viewer from the Viewer dropdown list.
+2.	In the Node Caption pane, click the topmost (All) node.
+3.	In the Node Details pane, look at the value for ATTRIBUTE_NAME.
+This value tells you which series, or combination of product and region, is contained in this node. In the AdventureWorks example, the topmost node is for the M200 Europe series.
+4.	In the Node Caption pane, locate the first node that has child nodes.
+If a series node has children, the tree view that is displayed on the Model tab of the Microsoft Time Series Viewer will also have a branching structure.
+5.	Expand the node and click on one of the child nodes.
+The NODE_DESCRIPTION column of the schema contains the condition that caused the tree to split.
+6.	In the Node Caption pane, click the topmost ARIMA node, and expand the node until all child nodes are visible.
+7.	In the Node Details pane, look at the value for ATTRIBUTE_NAME.
+This value tells you which time series is contained in this node. The topmost node in the ARIMA section should match the topmost node in the (All) section. In the AdventureWorks example, this node contains the ARIMA analysis for the series, M200 Europe.
+
+----------------------------------------------------------------------------------
+
+To select a model and input table
+1.	On the Mining Model Prediction tab of Data Mining Designer, in the Mining Model box, click Select Model.
+2.	In the Select Mining Model dialog box, expand the Forecasting structure, select the Forecasting model from the list, and then click OK.
+3.	Ignore the Select Input Table(s) box.
+(Note: For a time series model, you do not need to specify a separate input unless you are doing cross-prediction.)
+4.	In the Source column in the grid on the Mining Model Prediction tab, click the cell in the first empty row, and then select Forecasting mining model.
+5.	In the Field column, select Model Region.
+This adds the series identifier to the prediction query to signify which combination of model and region the prediction applies to.
+6.	Click the next empty row in the Source column, and then select Prediction Function.
+7.	In the Field column, select PredictTimeSeries. 
+(Note: You can also use the Predict function with a time series model. However, by default it creates only one prediction for each series. Therefore, to specify the number of prediction steps, you will use the PredictTimeSeries function. )
+8.	In the Mining Model pane, select the mining model column, Amount, and drag it into the Criteria/Arguments box for the PredictTimeSeries function that you just added.
+9.	Click the Criteria/Arguments box, and type a comma, followed by 5, after the field name.
+The text in the Criteria/Arguments box should now look like this:
+[Forecasting].[Amount],5
+10.	In the Alias column, type PredictAmount.
+11.	Click the next empty row in the Source column, and then select Prediction Function again.
+12.	In the Field column, select PredictTimeSeries.
+13.	In the Mining Model pane, select the column Quantity, and drag it into the Criteria/Arguments box for the second PredictTimeSeries function.
+14.	Click the Criteria/Arguments box, and type a comma, followed by 5, after the field name.
+The text in the Criteria/Arguments box should now look like this:
+[Forecasting].[ Quantity],5
+15.	In the Alias column, type PredictQuantity.
+16.	Click Switch to query result view.
+
+----------------------------------------------------------------------------------------------
+
+To flatten the results in the Results pane
+1.	In the Prediction Query Builder, click Switch to query design view. The view changes to allow manual editing of the DMX query text.
+2.	Type the FLATTENED keyword after the SELECT keyword. The complete query text should be as follows:
+SELECT FLATTENED
+  [Forecasting].[Model Region],
+  (PredictTimeSeries([Forecasting].[Amount],5)) as [PredictAmount],
+  (PredictTimeSeries([Forecasting].[Quantity],5)) as [PredictQuantity]
+FROM
+  [Forecasting]
+3.	Click Switch to query result view.
+
+To export prediction query results
+1.	Click Save query results.
+2.	In the Save Data Mining Query Result dialog box, for Data Source, select Adventure Works DW2008. You can also create a new data source if you want to save the data to a different relational database.
+3.	For Table Name, type a new temporary table name, such as Test Predictions.
+Click Save. (Note: To view the table that you created, create a connection to the database engine of the instance where you saved the data, and create a query.)
+
+-------------------------------------------------------------------------------------------------
+
+
+
+
+
